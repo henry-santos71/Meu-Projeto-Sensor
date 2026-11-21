@@ -1,0 +1,584 @@
+[
+    {
+        "id": "ae7b46d846388cec",
+        "type": "tab",
+        "label": "Fluxo 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "tab_iot",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "broker_hive",
+        "type": "mqtt-broker",
+        "name": "HiveMQ",
+        "broker": "broker.hivemq.com",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "ui_tab_home",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ui_grp_iot",
+        "type": "ui_group",
+        "name": "Our Dashboard",
+        "tab": "ui_tab_home",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "b8e03be863322080",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "mqtt_in_dados",
+        "type": "mqtt in",
+        "z": "tab_iot",
+        "name": "Tempdata",
+        "topic": "Tempdata",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "broker_hive",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "fn_temp",
+                "fn_umid",
+                "fn_log"
+            ]
+        ]
+    },
+    {
+        "id": "fn_temp",
+        "type": "function",
+        "z": "tab_iot",
+        "name": "Extract Temperature",
+        "func": "var p = msg.payload.toString().split(',');\nmsg.payload = parseFloat(p[0]);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 80,
+        "wires": [
+            [
+                "gauge_temp",
+                "chart_temp"
+            ]
+        ]
+    },
+    {
+        "id": "fn_umid",
+        "type": "function",
+        "z": "tab_iot",
+        "name": "Extract Humidity",
+        "func": "var p = msg.payload.toString().split(',');\nmsg.payload = parseFloat(p[1]);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 180,
+        "wires": [
+            [
+                "gauge_umid",
+                "chart_umid"
+            ]
+        ]
+    },
+    {
+        "id": "gauge_temp",
+        "type": "ui_gauge",
+        "z": "tab_iot",
+        "name": "Temperature Gauge",
+        "group": "ui_grp_iot",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature Gauge",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": "-10",
+        "max": "60",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 570,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "chart_temp",
+        "type": "ui_chart",
+        "z": "tab_iot",
+        "name": "Temperature Chart",
+        "group": "ui_grp_iot",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature Chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Aguardando dados...",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 570,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "gauge_umid",
+        "type": "ui_gauge",
+        "z": "tab_iot",
+        "name": "Humidity Gauge",
+        "group": "ui_grp_iot",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Humidity Gauge",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#e6e600",
+            "#00b500",
+            "#1f77b4"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 560,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "chart_umid",
+        "type": "ui_chart",
+        "z": "tab_iot",
+        "name": "Humidity Chart",
+        "group": "ui_grp_iot",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "label": "Humidity Chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Aguardando dados...",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#2ca02c",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 560,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fn_log",
+        "type": "function",
+        "z": "tab_iot",
+        "name": "Guardar Logs",
+        "func": "var p = msg.payload.toString().split(',');\nvar logs = context.get('logs') || [];\nlogs.unshift(new Date().toLocaleTimeString('pt-BR') + '  |  Temp: ' + p[0] + ' °C  |  Umid: ' + p[1] + ' %');\nif (logs.length > 10) { logs.pop(); }\ncontext.set('logs', logs);\nmsg.payload = logs;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 260,
+        "wires": [
+            [
+                "tpl_logs"
+            ]
+        ]
+    },
+    {
+        "id": "tpl_logs",
+        "type": "ui_template",
+        "z": "tab_iot",
+        "group": "ui_grp_iot",
+        "name": "Temperature / Humidity Logs",
+        "order": 5,
+        "width": "6",
+        "height": "5",
+        "format": "<div style=\"font-family:monospace;font-size:12px\"><b>Logs (últimas 10 leituras)</b><div ng-repeat=\"l in msg.payload track by $index\">{{l}}</div></div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 580,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "sw_led",
+        "type": "ui_switch",
+        "z": "tab_iot",
+        "name": "LED",
+        "label": "LED",
+        "tooltip": "",
+        "group": "ui_grp_iot",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "false",
+        "topic": "",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "ON",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "OFF",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 110,
+        "y": 340,
+        "wires": [
+            [
+                "mqtt_out_led"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_led",
+        "type": "mqtt out",
+        "z": "tab_iot",
+        "name": "lights",
+        "topic": "lights",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_hive",
+        "x": 330,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "sl_servo",
+        "type": "ui_slider",
+        "z": "tab_iot",
+        "name": "servo",
+        "label": "Servo (graus)",
+        "tooltip": "",
+        "group": "ui_grp_iot",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 0,
+        "max": "180",
+        "step": 1,
+        "className": "",
+        "x": 110,
+        "y": 400,
+        "wires": [
+            [
+                "mqtt_out_servo"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_servo",
+        "type": "mqtt out",
+        "z": "tab_iot",
+        "name": "servo",
+        "topic": "servo",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_hive",
+        "x": 330,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "cp_neo",
+        "type": "ui_colour_picker",
+        "z": "tab_iot",
+        "name": "NeoPixel Color Picker",
+        "label": "NeoPixel Color Picker",
+        "group": "ui_grp_iot",
+        "format": "rgb",
+        "showSwatch": true,
+        "showPicker": true,
+        "showValue": false,
+        "showHue": false,
+        "showAlpha": false,
+        "showLightness": true,
+        "square": "false",
+        "dynOutput": "false",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "topic": "",
+        "topicType": "str",
+        "className": "",
+        "x": 140,
+        "y": 460,
+        "wires": [
+            [
+                "fn_rgb"
+            ]
+        ]
+    },
+    {
+        "id": "fn_rgb",
+        "type": "function",
+        "z": "tab_iot",
+        "name": "Parse RGB values",
+        "func": "var n = msg.payload.toString().match(/\\d+/g);\nif (n && n.length >= 3) {\n    msg.payload = n[0] + ',' + n[1] + ',' + n[2];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 460,
+        "wires": [
+            [
+                "mqtt_out_neo"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt_out_neo",
+        "type": "mqtt out",
+        "z": "tab_iot",
+        "name": "lights/neopixel",
+        "topic": "lights/neopixel",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_hive",
+        "x": 560,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "37c0e54560213237",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]

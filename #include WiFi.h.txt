@@ -1,0 +1,176 @@
+#include <WiFi.h>
+#include <Adafruit_Sensor.h>
+#include <DHT_U.h>
+#include <ESP32Servo.h>
+#include <FastLED.h>
+#include <PubSubClient.h>
+
+#define DHTPIN 12
+#define LED 26
+#define SERVO_PIN 2
+#define LED_PIN 16
+#define NUM_LEDS 16
+
+#define DHTTYPE DHT22
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+Servo servo;
+
+CRGB leds[NUM_LEDS];
+
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+
+const char* mqttServer = "broker.hivemq.com";
+const char* mqttUserName = "Aula_IoT";
+const char* mqttPwd = "aulaIoT2026";
+const char* mqttClientID = "21d970ab5b424cdda4365e55a29d3880";
+const char* topic = "Tempdata";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+unsigned long previousMillis = 0;
+const long interval = 1000;
+float temp = 0, hum = 0;
+
+void setup_wifi() {
+  delay(10);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("Wifi Conectado");
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    String id = String(mqttClientID) + "-" + String(random(0xffff), HEX);
+    if (client.connect(id.c_str())) {
+      Serial.println("MQTT Conectado");
+      client.subscribe("lights");
+      client.subscribe("servo");
+      client.subscribe("lights/neopixel");
+      Serial.println("Topicos assinados");
+    } else {
+      Serial.print("Falhou, rc=");
+      Serial.println(client.state());
+      Serial.println("Tentando novamente em 5s");
+      delay(5000);
+    }
+  }
+}
+
+void callback(char* topicName, byte* payload, unsigned int length) {
+  Serial.print("A mensagem chegou ao topico: ");
+  Serial.println(topicName);
+  Serial.print("Mensagem: ");
+
+  String data = "";
+
+  for (unsigned int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+    data += (char)payload[i];
+  }
+
+  Serial.println();
+  Serial.print("Tamanho da Mensagem: ");
+  Serial.println(length);
+  Serial.println("-------------");
+
+  if (String(topicName) == "lights") {
+    if (data == "ON") {
+      Serial.println("LED ligado");
+      digitalWrite(LED, HIGH);
+    } else {
+      Serial.println("LED desligado");
+      digitalWrite(LED, LOW);
+    }
+  }
+  else if (String(topicName) == "servo") {
+    int degree = data.toInt();
+    Serial.print("Movendo o servo ao grau: ");
+    Serial.println(degree);
+    servo.write(degree);
+  }
+  else if (String(topicName) == "lights/neopixel") {
+    int red = 0, green = 0, blue = 0;
+    sscanf(data.c_str(), "%d,%d,%d", &red, &green, &blue);
+
+    Serial.print("Definindo NeoPixel para a cor (R,G,B): ");
+    Serial.print(red);
+    Serial.print(",");
+    Serial.print(green);
+    Serial.print(",");
+    Serial.println(blue);
+
+    fill_solid(leds, NUM_LEDS, CRGB(red, green, blue));
+    FastLED.show();
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  dht.begin();
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  dht.humidity().getSensor(&sensor);
+
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
+
+  servo.attach(SERVO_PIN, 500, 2400);
+  servo.write(0);
+
+  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.show();
+
+  setup_wifi();
+  client.setServer(mqttServer, 1883);
+  client.setCallback(callback);
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    sensors_event_t event;
+
+    dht.temperature().getEvent(&event);
+    if (isnan(event.temperature)) {
+      Serial.println("Erro ao ler temperatura!");
+    } else {
+      temp = event.temperature;
+      Serial.print("Temperatura: ");
+      Serial.print(temp);
+      Serial.println("°C");
+    }
+
+    dht.humidity().getEvent(&event);
+    if (isnan(event.relative_humidity)) {
+      Serial.println("Erro ao ler umidade!");
+    } else {
+      hum = event.relative_humidity;
+      Serial.print("Umidade: ");
+      Serial.print(hum);
+      Serial.println("%");
+    }
+
+    String msgStr = String(temp) + "," + String(hum) + ",";
+    Serial.print("PUBLICANDO: ");
+    Serial.println(msgStr);
+    client.publish(topic, msgStr.c_str());
+  }
+}
